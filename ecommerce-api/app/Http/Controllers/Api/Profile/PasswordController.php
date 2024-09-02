@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Profile;
 
 use App\Customs\Services\PasswordService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PasswordChangeRequest;
+use App\Http\Requests\UserManagement\PasswordChangeRequest;
 use Illuminate\Http\Request;
 
 class PasswordController extends Controller

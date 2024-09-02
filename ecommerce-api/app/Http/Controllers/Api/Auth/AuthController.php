@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Customs\Services\EmailVerificationService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterationRequest;
-use App\Http\Requests\ResendEmailRequest;
-use App\Http\Requests\VerifyEmailRequest;
+use App\Http\Requests\UserManagement\LoginRequest;
+use App\Http\Requests\UserManagement\RegisterationRequest;
+use App\Http\Requests\UserManagement\ResendEmailRequest;
+use App\Http\Requests\UserManagement\VerifyEmailRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -29,7 +29,7 @@ class AuthController extends Controller
     }
     public function register(RegisterationRequest $request)
     {
-        $user = User::create($$request->validated());
+        $user = User::create($request->except(['role', 'password_confirmation']));
 
         if ($user) {
             // Assign role based on request input or default to 'customer'

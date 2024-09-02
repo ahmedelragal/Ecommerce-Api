@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\UserManagement;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ResendEmailRequest extends FormRequest
+class PasswordChangeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,8 @@ class ResendEmailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email:filter'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'current_password' => ['required', 'string'],
         ];
     }
 }
