@@ -21,15 +21,16 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['name' => 'manage orders']);
         Permission::create(['name' => 'manage categories']);
         Permission::create(['name' => 'manage tags']);
+        Permission::create(['name' => 'vendor orders']);
         Permission::create(['name' => 'admin privelages']);
 
 
 
         $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo(['admin privelages', 'manage users', 'manage products', 'manage orders', 'manage categories', 'manage tags']);
+        $admin->givePermissionTo(['admin privelages', 'manage users', 'manage products', 'manage orders', 'manage categories', 'manage tags', 'vendor orders']);
 
         $vendor = Role::create(['name' => 'vendor']);
-        $vendor->givePermissionTo(['manage products']);
+        $vendor->givePermissionTo(['manage products', 'vendor orders']);
 
         $customer = Role::create(['name' => 'customer']);
         $customer->givePermissionTo(['manage orders']);

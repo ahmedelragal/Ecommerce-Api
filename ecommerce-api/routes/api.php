@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Order\OrderController;
+use App\Http\Controllers\Api\Order\VendorOrderController;
 use App\Http\Controllers\Api\Profile\PasswordController;
 use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Product\CategoryController;
@@ -26,20 +28,14 @@ Route::middleware(['throttle:1,1'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::post('/change_password', [PasswordController::class, 'changePassword']);
 
-    // Routes for Admin
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/test', function () {
-            return 'admin test';
-        });
-    });
-
     // Product Management Routes
     Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store'])->middleware('can:manage products');
     Route::get('/products/{id}', [ProductController::class, 'show']);
     Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('can:manage products');
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('can:manage products');
-    //Product Image Management
+
+    //Product Image Management Routes
     Route::post('products/{id}/images', [ProductImageController::class, 'upload'])->middleware('can:manage products');
     Route::delete('products/{productId}/images/{imageId}', [ProductImageController::class, 'delete'])->middleware('can:manage products');
     Route::get('products/{id}/images', [ProductImageController::class, 'getImages'])->middleware('can:manage products');
@@ -58,10 +54,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/tags/{id}', [TagController::class, 'destroy'])->middleware('can:manage tags');
     Route::get('/tags/{id}', [TagController::class, 'show']);
 
+    //Customer Order Management Routes
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('can:manage orders');
+    Route::get('/orders', [OrderController::class, 'index'])->middleware('can:manage orders');
+    Route::delete('/orders/{id}', [OrderController::class, 'cancel'])->middleware('can:manage orders');
+    Route::get('/orders/{orderId}/track', [OrderController::class, 'track'])->middleware('can:manage orders');
 
-    // // Routes for Customer
-    // Route::middleware(['role:customer'])->group(function () {
-    //     Route::post('/products', [ProductController::class, 'index']);
-    //     Route::post('/products/{id}', [ProductController::class, 'show']);
-    // });
+    //Vendor Order Management Routes
+    Route::get('/vendor/orders', [VendorOrderController::class, 'index'])->middleware('can:vendor orders');
+    Route::patch('/vendor/orders/{orderId}/status', [VendorOrderController::class, 'updateStatus'])->middleware('can:vendor orders');
+    Route::patch('/vendor/orders/{orderId}/items-status', [VendorOrderController::class, 'updateOrderItemStatus'])->middleware('can:vendor orders');
 });
