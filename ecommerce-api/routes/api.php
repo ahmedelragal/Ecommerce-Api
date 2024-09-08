@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Order\OrderController;
 use App\Http\Controllers\Api\Order\VendorOrderController;
+use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\Profile\PasswordController;
 use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Product\CategoryController;
@@ -64,4 +65,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vendor/orders', [VendorOrderController::class, 'index'])->middleware('can:vendor orders');
     Route::patch('/vendor/orders/{orderId}/status', [VendorOrderController::class, 'updateStatus'])->middleware('can:vendor orders');
     Route::patch('/vendor/orders/{orderId}/items-status', [VendorOrderController::class, 'updateOrderItemStatus'])->middleware('can:vendor orders');
+
+    //Payment Routes
+    Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPaymentIntent'])->middleware('can:manage orders');
+    Route::post('/payment/confirm/{orderId}/{paymentIntentId}', [PaymentController::class, 'confirmPayment'])->middleware('can:manage orders');
 });
