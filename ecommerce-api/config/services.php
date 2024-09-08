@@ -38,5 +38,9 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
+    'akismet' => [
+        'api_key' => env('AKISMET_API_KEY'),
+        'blog_url' => env('AKISMET_BLOG_URL'),
+    ],
 
 ];

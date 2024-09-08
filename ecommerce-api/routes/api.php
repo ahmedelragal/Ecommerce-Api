@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Product\CategoryController;
 use App\Http\Controllers\Api\Product\ProductImageController;
 use App\Http\Controllers\Api\Product\TagController;
+use App\Http\Controllers\Api\Review\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -69,4 +70,9 @@ Route::middleware(['auth'])->group(function () {
     //Payment Routes
     Route::post('/payment/create/{orderId}', [PaymentController::class, 'createPaymentIntent'])->middleware('can:manage orders');
     Route::post('/payment/confirm/{orderId}/{paymentIntentId}', [PaymentController::class, 'confirmPayment'])->middleware('can:manage orders');
+
+    //Review and Rating Routes
+    Route::post('products/{id}/review', [ReviewController::class, 'submitReview']);
+    Route::put('reviews/{id}/approve', [ReviewController::class, 'approveReview']);
+    Route::get('products/{id}/reviews', [ReviewController::class, 'getProductReviews']);
 });
