@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Product\ProductImageController;
 use App\Http\Controllers\Api\Product\TagController;
 use App\Http\Controllers\Api\Review\ReviewController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -33,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
     // Product Management Routes
     Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store'])->middleware('can:manage products');
-    Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/products/view/{id}', [ProductController::class, 'show']);
     Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('can:manage products');
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('can:manage products');
 
@@ -75,4 +76,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('products/{id}/review', [ReviewController::class, 'submitReview'])->middleware('can:write reviews');
     Route::put('reviews/{id}/approve', [ReviewController::class, 'approveReview'])->middleware('can:approve reviews');
     Route::get('products/{id}/reviews', [ReviewController::class, 'getProductReviews']);
+
+    //Product Search and Filtering
+    Route::get('/products/search', [ProductController::class, 'search']);
 });

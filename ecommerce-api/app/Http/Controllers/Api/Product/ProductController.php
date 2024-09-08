@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api\Product;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductManagement\ProductSearchRequest;
 use App\Http\Requests\ProductManagement\ProductStoreRequest;
 use App\Http\Requests\ProductManagement\ProductUpdateRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -79,5 +81,56 @@ class ProductController extends Controller
         } else {
             return response()->json(['message' => 'Product not found'], 404);
         }
+    }
+    public function search(ProductSearchRequest $request)
+    {
+        $keyword = $request->input('keyword');
+        $category = $request->input('category');
+        $minPrice = $request->input('min_price');
+        $maxPrice = $request->input('max_price');
+        $rating = $request->input('rating');
+
+        $cacheKey = "search:keyword=$keyword:category=$category:minPrice=$minPrice:maxPrice=$maxPrice:rating=$rating";
+        $products = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($keyword, $category, $minPrice, $maxPrice, $rating) {
+            $query = Product::query()->with(['categories', 'tags', 'reviews']);
+
+            if ($keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name', 'like', '%' . $keyword . '%')
+                        ->orWhere('description', 'like', '%' . $keyword . '%');
+                });
+            }
+
+            if ($category) {
+                $query->whereHas('categories', function ($q) use ($category) {
+                    $q->where('category_id', $category);
+                });
+            }
+
+            if ($minPrice) {
+                $query->where('price', '>=', $minPrice);
+            }
+
+            if ($maxPrice) {
+                $query->where('price', '<=', $maxPrice);
+            }
+
+            if ($rating) {
+                $query->whereHas('reviews', function ($q) use ($rating) {
+                    $q->havingRaw('AVG(rating) >= ?', [$rating]);
+                });
+            }
+
+            return $query->get();
+        });
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'No products found'], 404);
+        }
+
+        return response()->json([
+            'count' => $products->count(),
+            'products' => $products,
+        ]);
     }
 }
