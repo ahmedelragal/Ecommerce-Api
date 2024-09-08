@@ -72,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payment/confirm/{orderId}/{paymentIntentId}', [PaymentController::class, 'confirmPayment'])->middleware('can:manage orders');
 
     //Review and Rating Routes
-    Route::post('products/{id}/review', [ReviewController::class, 'submitReview']);
-    Route::put('reviews/{id}/approve', [ReviewController::class, 'approveReview']);
+    Route::post('products/{id}/review', [ReviewController::class, 'submitReview'])->middleware('can:write reviews');
+    Route::put('reviews/{id}/approve', [ReviewController::class, 'approveReview'])->middleware('can:approve reviews');
     Route::get('products/{id}/reviews', [ReviewController::class, 'getProductReviews']);
 });
