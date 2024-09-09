@@ -90,7 +90,7 @@ class ProductController extends Controller
         if ($product) {
             if (Auth::id() != $product->user_id) {
                 if (!auth()->user()->can('admin privelages')) {
-                    return response()->json(['message' => 'Unauthorized to edit product'], 403);
+                    return response()->json(['message' => 'Unauthorized to delete product'], 403);
                 }
             }
             $product->delete();

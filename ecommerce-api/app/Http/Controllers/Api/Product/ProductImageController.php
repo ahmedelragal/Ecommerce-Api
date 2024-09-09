@@ -20,8 +20,11 @@ class ProductImageController extends Controller
         $product = Product::find($productId);
         if ($product) {
             if (Auth::id() != $product->user_id) {
-                return response()->json(['message' => 'Unauthorized to edit product'], 403);
-            } elseif ($request->hasFile('images')) {
+                if (!auth()->user()->can('admin privelages')) {
+                    return response()->json(['message' => 'Unauthorized to edit product'], 403);
+                }
+            }
+            if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('product_images', 'public');
 
@@ -43,13 +46,14 @@ class ProductImageController extends Controller
         $product = Product::find($productId);
         if ($product) {
             if (Auth::id() != $product->user_id) {
-                return response()->json(['message' => 'Unauthorized to edit product'], 403);
-            } else {
-                $image = $product->images()->where('id', $imageId)->firstOrFail();
-                Storage::disk('public')->delete($image->image_path);
-                $image->delete();
-                return response()->json(['message' => 'Image deleted successfully']);
+                if (!auth()->user()->can('admin privelages')) {
+                    return response()->json(['message' => 'Unauthorized to edit product'], 403);
+                }
             }
+            $image = $product->images()->where('id', $imageId)->firstOrFail();
+            Storage::disk('public')->delete($image->image_path);
+            $image->delete();
+            return response()->json(['message' => 'Image deleted successfully']);
         } else {
             return response()->json(['message' => 'Product not found'], 404);
         }
