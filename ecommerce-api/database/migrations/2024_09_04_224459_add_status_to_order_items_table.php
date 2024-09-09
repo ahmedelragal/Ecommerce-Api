@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('order_items', function (Blueprint $table) {
-            $table->string('status')->nullable(); // Add status column
+            $table->string('status')->default('pending');
         });
     }
 

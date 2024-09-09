@@ -8,12 +8,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
     public function store(CreateOrderRequest $request)
     {
         $user = auth()->user();
+        $user_id = auth()->id();
         $items = $request->input('items');
         $totalPrice = 0;
 
@@ -37,13 +39,20 @@ class OrderController extends Controller
         }
 
         $order->update(['total_price' => $totalPrice]);
+        Cache::forget("user_orders_$user_id");
 
         return response()->json($order->load('orderItems.product'), 201);
     }
     public function index()
     {
         $user = auth()->user();
-        $orders = $user->orders()->with('orderItems.product')->get();
+        $user_id = auth()->id();
+
+        $orders = Cache::remember("user_orders_$user_id", now()->addMinutes(10), function () use ($user) {
+            return $user->orders()->with('orderItems.product')->get();
+        });
+
+
         return response()->json($orders, 200);
     }
 
@@ -53,6 +62,9 @@ class OrderController extends Controller
 
         if ($order->status === 'pending') {
             $order->update(['status' => 'canceled']);
+            $user_id = auth()->id();
+            Cache::forget("user_orders_$user_id");
+            Cache::forget("orderDetails_$orderId");
             return response()->json(['message' => 'Order canceled successfully.'], 200);
         }
 
@@ -60,7 +72,13 @@ class OrderController extends Controller
     }
     public function track($orderId)
     {
-        $order = Order::where('user_id', auth()->id())->with('orderItems.product')->findOrFail($orderId);
+        $cacheKey = "orderDetails_$orderId" . auth()->id();
+
+        $order = Cache::remember("orderDetails_$orderId", now()->addMinutes(10), function () use ($orderId) {
+            return Order::where('user_id', auth()->id())
+                ->with('orderItems.product')
+                ->findOrFail($orderId);
+        });
 
         return response()->json($order, 200);
     }

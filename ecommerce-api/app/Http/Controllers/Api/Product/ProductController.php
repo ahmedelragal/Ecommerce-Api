@@ -18,7 +18,11 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::with('categories', 'tags', 'images')->get();
+        $products = Cache::remember('all_products', now()->addMinutes(30), function () {
+            return Product::with('categories', 'tags', 'images')->get();
+        });
+
+        return response()->json($products);
     }
     public function store(ProductStoreRequest $request)
     {
@@ -37,11 +41,14 @@ class ProductController extends Controller
         }
         $product->load('categories', 'tags', 'images');
         event(new NewProductAdded($product));
+        Cache::forget('all_products');
         return response()->json($product, 201);
     }
     public function show($id)
     {
-        $product = Product::with('categories', 'tags', 'images')->find($id);
+        $product = Cache::remember("product_$id", now()->addMinutes(30), function () use ($id) {
+            return Product::with('categories', 'tags', 'images')->find($id);
+        });
         if ($product) {
             return response()->json($product, 200);
         } else {
@@ -68,6 +75,7 @@ class ProductController extends Controller
                 $product->tags()->sync($request->tag_ids);
             }
             $product->load('categories', 'tags', 'images');
+            Cache::forget("product_$id");
             if ((float)$old_price > (float)$product->price) {
                 event(new NewPromotionAdded($product));
             }
@@ -86,6 +94,9 @@ class ProductController extends Controller
                 }
             }
             $product->delete();
+            Cache::forget("product_$id");
+            Cache::forget('all_products');
+            Cache::forget("productReviews_$id");
         } else {
             return response()->json(['message' => 'Product not found'], 404);
         }

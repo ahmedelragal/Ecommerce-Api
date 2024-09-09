@@ -7,7 +7,7 @@ use App\Http\Requests\Reviews\SubmitReviewRequest;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\Product;
-
+use Illuminate\Support\Facades\Cache;
 
 class ReviewController extends Controller
 {
@@ -69,16 +69,24 @@ class ReviewController extends Controller
     }
     public function getProductReviews($productId)
     {
-        $product = Product::find($productId);
-        if ($product) {
-            $reviews = $product->reviews()->where('approved', true)->get();
-            if ($reviews->isEmpty()) {
-                return response()->json(['message' => 'No reviews found'], 404);
-            } else {
-                return response()->json($reviews);
+        $reviews = Cache::remember("productReviews_$productId", now()->addMinutes(10), function () use ($productId) {
+            $product = Product::find($productId);
+
+            if (!$product) {
+                return null;
             }
-        } else {
+
+            return $product->reviews()->where('approved', true)->get();
+        });
+
+        if (!$reviews) {
             return response()->json(['error' => 'Product not found'], 404);
         }
+
+        if ($reviews->isEmpty()) {
+            return response()->json(['message' => 'No reviews found'], 404);
+        }
+
+        return response()->json($reviews);
     }
 }
