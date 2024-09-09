@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\Order;
 
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderManagement\UpdateOrderItemRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class VendorOrderController extends Controller
 {
@@ -31,6 +34,7 @@ class VendorOrderController extends Controller
         ]);
 
         $order->update(['status' => $request->input('status')]);
+        event(new OrderStatusUpdated($order));
 
         return response()->json(['message' => 'Order status updated successfully.'], 200);
     }

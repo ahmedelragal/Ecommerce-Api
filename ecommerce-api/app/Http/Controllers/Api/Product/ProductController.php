@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Product;
 
+use App\Events\NewProductAdded;
+use App\Events\NewPromotionAdded;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductManagement\ProductSearchRequest;
 use App\Http\Requests\ProductManagement\ProductStoreRequest;
@@ -34,6 +36,7 @@ class ProductController extends Controller
             $product->tags()->attach($request->tag_ids);
         }
         $product->load('categories', 'tags', 'images');
+        event(new NewProductAdded($product));
         return response()->json($product, 201);
     }
     public function show($id)
@@ -49,6 +52,8 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, $id)
     {
         $product = Product::find($id);
+        $old_price = $product->price;
+
         if ($product) {
             if (Auth::id() != $product->user_id) {
                 if (!auth()->user()->can('admin privelages')) {
@@ -63,6 +68,9 @@ class ProductController extends Controller
                 $product->tags()->sync($request->tag_ids);
             }
             $product->load('categories', 'tags', 'images');
+            if ((float)$old_price > (float)$product->price) {
+                event(new NewPromotionAdded($product));
+            }
             return response()->json($product, 200);
         } else {
             return response()->json(['message' => 'Product not found'], 404);

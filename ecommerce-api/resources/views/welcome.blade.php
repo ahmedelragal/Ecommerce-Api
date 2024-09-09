@@ -10,6 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+    @vite(['resources/js/app.js'])
 
     <!-- Styles -->
     <style>
@@ -900,6 +901,30 @@
             }
         }
     </style>
+    <script src="{{ asset('/build/assets/app-DLKeJYxp.js') }}"></script>
+    <script>
+        window.onload = function() {
+            if (window.Echo) {
+                Echo.channel('order-status')
+                    .listen('.orderStatusUpdated', (data) => {
+                        console.log('Order status updated: ' + JSON.stringify(data));
+                    });
+                Echo.channel('product-added')
+                    .listen('.ProductAdded', (data) => {
+                        console.log('Product added: ' + JSON.stringify(data));
+                    });
+                Echo.channel('promotion-added')
+                    .listen('.PromotionAdded', (data) => {
+                        console.log('New Promotion: ' + JSON.stringify(data));
+                    });
+
+            } else {
+                console.error('Echo is not defined');
+            }
+        };
+    </script>
+
+
 </head>
 
 <body class="font-sans antialiased dark:bg-black dark:text-white/50">
